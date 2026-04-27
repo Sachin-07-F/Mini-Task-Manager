@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(
+  /\/$/,
+  ""
+);
+
+const buildApiUrl = (path) => `${API_BASE_URL}${path}`;
 
 function App() {
   const [taskText, setTaskText] = useState("");
@@ -22,7 +26,7 @@ function App() {
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks`);
+      const response = await fetch(buildApiUrl("/tasks"));
       if (!response.ok) {
         throw new Error("Failed to fetch tasks.");
       }
@@ -46,7 +50,7 @@ function App() {
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks`, {
+      const response = await fetch(buildApiUrl("/tasks"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: taskText }),
@@ -68,7 +72,7 @@ function App() {
   const handleDeleteTask = async (taskId) => {
     setError("");
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+      const response = await fetch(buildApiUrl(`/tasks/${taskId}`), {
         method: "DELETE",
       });
 
@@ -91,7 +95,7 @@ function App() {
   const handleToggleTask = async (taskId) => {
     setError("");
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/toggle`, {
+      const response = await fetch(buildApiUrl(`/tasks/${taskId}/toggle`), {
         method: "PATCH",
       });
 

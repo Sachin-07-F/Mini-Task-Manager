@@ -17,12 +17,14 @@ The app supports adding, viewing, deleting, and toggling task completion status 
 - **Frontend:** React, Vite, CSS
 - **Backend:** Node.js, Express, CORS
 - **Storage:** In-memory array (non-persistent)
+- **Hosting:** Vercel (frontend) + Render (backend)
 
 ## Folder Structure
 
 ```text
 mini-task-manager/
 ├─ backend/
+│  ├─ .env.example
 │  ├─ package.json
 │  └─ server.js
 ├─ frontend/
@@ -68,6 +70,7 @@ cd <your-project-folder>
 ```bash
 cd backend
 npm install
+cp .env.example .env
 npm run dev
 ```
 
@@ -85,7 +88,7 @@ npm install
 Create `.env` in `frontend/` using:
 
 ```env
-VITE_API_BASE_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5000
 ```
 
 Then start frontend:
@@ -100,26 +103,69 @@ Frontend runs at: `http://localhost:5173`
 
 ## Backend Deployment on Render
 
-1. Push project to GitHub.
-2. In Render, create a **Web Service**.
-3. Set:
+1. Push the repository to GitHub.
+2. In Render, create a new **Web Service** from the repo.
+3. Configure:
    - Root directory: `backend`
    - Build command: `npm install`
    - Start command: `npm start`
-4. Deploy and copy the generated backend URL (example: `https://your-api.onrender.com`).
+4. Add environment variables:
+   - `PORT=10000` (optional on Render, Render provides this automatically)
+   - `FRONTEND_URL=https://your-frontend.vercel.app`
+   - Or use `ALLOWED_ORIGINS=https://your-frontend.vercel.app`
+5. Deploy and copy the backend URL, for example `https://your-api.onrender.com`.
+
+### Backend production notes
+
+- The API listens on `process.env.PORT` with `5000` as the local fallback.
+- CORS allows the configured frontend origin and supports `GET`, `POST`, `PATCH`, `DELETE`, and `OPTIONS`.
+- Requests without an `Origin` header are still allowed for health checks and server-to-server access.
 
 ## Frontend Deployment on Vercel
 
 1. In Vercel, import the same GitHub repo.
-2. Set:
+2. Configure:
    - Framework preset: `Vite`
    - Root directory: `frontend`
+   - Build command: `npm run build`
+   - Output directory: `dist`
 3. Add environment variable:
-   - `VITE_API_BASE_URL = https://your-api.onrender.com`
+   - `VITE_API_URL=https://your-api.onrender.com`
 4. Deploy.
+
+### Frontend production notes
+
+- All frontend API calls now use `VITE_API_URL`.
+- Local development still works with `http://localhost:5000` when the env variable is not set.
+- No `vercel.json` is required for this project because Vercel detects Vite automatically.
+
+## Production Deployment Flow
+
+1. Deploy the backend to Render first.
+2. Copy the Render backend URL.
+3. Add that URL to Vercel as `VITE_API_URL`.
+4. Copy the final Vercel frontend URL.
+5. Add that URL to Render as `FRONTEND_URL` or inside `ALLOWED_ORIGINS`.
+6. Redeploy the backend if you changed Render environment variables.
+
+## Build Verification
+
+Frontend build:
+
+```bash
+cd frontend
+npm run build
+```
+
+Backend production start:
+
+```bash
+cd backend
+npm start
+```
 
 ## Assumptions
 
 - Data is intentionally in-memory as requested, so tasks reset when backend restarts.
 - Toggle is implemented via `PATCH /tasks/:id/toggle` to support complete/incomplete updates cleanly.
-- CORS is enabled for cross-origin local/deployed frontend-backend communication.
+- CORS is enabled for local and deployed frontend-backend communication through environment-based allowed origins.
