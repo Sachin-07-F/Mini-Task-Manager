@@ -82,6 +82,10 @@ app.delete("/tasks/:id", (req, res) => {
   return res.status(200).json({ message: "Task deleted successfully." });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
