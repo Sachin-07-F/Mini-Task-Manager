@@ -3,15 +3,15 @@ const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.FRONTEND_URL || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = [
+  "https://mini-task-manager-qat9.vercel.app",
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : [])
+].map(o => o.trim()).filter(Boolean);
 
 const corsOptions = {
   origin(origin, callback) {
     // Allow local tools/server-to-server requests without an Origin header.
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
